@@ -153,7 +153,7 @@ function AdminDashboardContent() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white font-caveat text-4xl">
+            <h1 className="font-bold text-gray-900 dark:text-white font-caveat text-4xl">
               Wishlist Management
             </h1>
             <p className="text-gray-600 mt-1 dark:text-gray-300 font-caveat text-lg">
@@ -423,11 +423,11 @@ function AdminDashboardContent() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white font-caveat text-xl">
+                  <h3 className="font-bold text-gray-900 dark:text-white font-caveat text-xl">
                     {settingsData.name || "Celebrant"}'s Birthday Wishlist
                   </h3>
                   {settingsData.age && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 font-caveat text-base">
+                    <p className="text-gray-600 dark:text-gray-400 font-caveat text-base">
                       Turning {settingsData.age}
                     </p>
                   )}
