@@ -22,13 +22,19 @@ export async function uploadImage(file: File, path: string): Promise<UploadResul
     // Cloudinary stores files in folders via the `folder` param
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("upload_preset", "<your_unsigned_preset>")
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
+    );
     formData.append("folder", path) // equivalent of Firebase "path"
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/<your_cloud_name>/image/upload`, {
-      method: "POST",
-      body: formData,
-    })
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
 
     if (!res.ok) {
       const errorText = await res.text()

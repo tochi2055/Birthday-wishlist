@@ -171,14 +171,14 @@ export default function BirthdayWishlist() {
             </div>
 
             <div className="text-white text-center">
-              <h1 className="text-4xl font-bold mb-2 text-balance font-caveat text-5xl">
+              <h1 className="font-bold mb-2 text-balance font-caveat text-5xl">
                 {celebrantSettings.name}'s Birthday Wishlist
               </h1>
-              <p className="text-xl text-white/90 text-pretty font-caveat text-2xl">
+              <p className="text-white/90 text-pretty font-caveat text-2xl">
                 Help make this birthday extra special!
               </p>
               {celebrantSettings.age && (
-                <p className="text-lg text-white/80 mt-1 font-caveat text-xl">Turning {celebrantSettings.age}</p>
+                <p className="text-white/80 mt-1 font-caveat text-xl">Turning {celebrantSettings.age}</p>
               )}
             </div>
           </div>
