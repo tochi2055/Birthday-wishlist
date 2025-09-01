@@ -73,16 +73,28 @@ export function MoneyDonationModal({ isOpen, onClose, onSubmit, isSubmitting }: 
 
               <div className="space-y-2 text-sm">
                 <div>
-                  <strong>Bank:</strong> Belarusbank
+                  <strong>Bank:</strong> Techno bank 
                 </div>
                 <div>
-                  <strong>Account Holder:</strong> Sarah Johnson
+                  <strong>Account Holder:</strong> Phybee Spencer
                 </div>
                 <div>
-                  <strong>Account Number:</strong> BY86 AKBB 1010 0000 0029 6600 0000
+                  <strong>Account Number:</strong>4142 9832 3518 0005
                 </div>
                 <div>
-                  <strong>BIC:</strong> AKBBBY2X
+                  <div>
+                  <strong>Bank:</strong>Belinvest Bank
+                </div>
+      
+                <div>
+                  <strong>Account Holder:</strong> Phybee Spencer
+                </div>
+                <div>
+                  <strong>Account Number:</strong>5578 8433 7117 2853
+                </div>
+                <div>
+                </div>
+                  {/* <strong>BIC:</strong> AKBBBY2X */}
                 </div>
                 <div>
                   <strong>Amount:</strong> {formData.amount}
