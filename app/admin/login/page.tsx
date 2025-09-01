@@ -120,6 +120,9 @@ export default function AdminLogin() {
           <p className="text-sm text-gray-500 flex items-center justify-center gap-1 dark:text-gray-400">
             Made with <Heart className="w-4 h-4 text-pink-500 fill-current" /> for birthdays
           </p>
+          <p className="text-xs text-gray-400 mt-2">© 2024 Birthday Wishlist. All rights reserved.</p>
+          <p className="text-xs text-gray-400">Version 1.0.0</p>  
+          <p className="text-xs text-gray-400"> PhoebeXTerry</p>
         </div>
       </div>
     </div>
