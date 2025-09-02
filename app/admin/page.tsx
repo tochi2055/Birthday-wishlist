@@ -39,6 +39,9 @@ function AdminDashboardContent() {
     age: celebrantSettings.age || "",
     profileImage: celebrantSettings.profileImage || "",
     backgroundImage: celebrantSettings.backgroundImage || "",
+     enableWineSelection: celebrantSettings.enableWineSelection ?? false,
+    enableFlowers: celebrantSettings.enableFlowers ?? false,
+    enableMoneyGift: celebrantSettings.enableMoneyGift ?? true,
   })
 
   const [isUploadingProfile, setIsUploadingProfile] = useState(false)

@@ -22,6 +22,10 @@ interface CelebrantSettings {
   age?: number;
   profileImage?: string;
   backgroundImage?: string;
+  celebrantId?: string;
+  enableWineSelection?: boolean;
+  enableFlowers?: boolean;
+  enableMoneyGift?: boolean;
 }
 
 interface WishlistContextType {
@@ -45,6 +49,9 @@ const defaultCelebrantSettings: CelebrantSettings = {
   age: 23,
   profileImage: "/placeholder.svg?key=8yjv9",
   backgroundImage: "/happy-birthday-celebration-background.png",
+  enableWineSelection: false,
+  enableFlowers: false,
+  enableMoneyGift: true,
 };
 
 // 🔄 Helper: get pending sync queue from localStorage
@@ -61,6 +68,9 @@ const savePendingSync = (queue: any[]) => {
   localStorage.setItem("pendingSync", JSON.stringify(queue));
 };
 
+const generateCelebrantId = () => {
+  return `celebrant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlistItems, setWishlistItems] =
     useState<WishlistItem[]>(defaultWishlistItems);
@@ -135,39 +145,15 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
     if (savedSettings) {
       try {
-        setCelebrantSettings(JSON.parse(savedSettings));
-      } catch {}
+         const parsedSettings = JSON.parse(savedSettings);
+         if (!parsedSettings.celebrantId) {
+           parsedSettings.celebrantId = generateCelebrantId();
+         }
+        setCelebrantSettings(parsedSettings);
+      } catch (error) {
+        console.error("Failed to parse saved celebrant settings:", error);
+      }
     }
-
-    // const fetchFromFirebase = async () => {
-    //   try {
-    //     const itemsSnapshot = await getDocs(collection(db, "wishlistItems"));
-    //     const items: WishlistItem[] = itemsSnapshot.docs.map((doc) => ({
-    //       id: doc.id,
-    //       ...doc.data(),
-    //       createdAt: doc.data().createdAt?.toDate(),
-    //       updatedAt: doc.data().updatedAt?.toDate(),
-    //     })) as WishlistItem[];
-    //     setWishlistItems(items);
-    //     localStorage.setItem("wishlistItems", JSON.stringify(items));
-
-    //     const settingsRef = doc(db, "celebrant", "settings");
-    //     const settingsSnap = await getDoc(settingsRef);
-    //     if (settingsSnap.exists()) {
-    //       const newSettings = settingsSnap.data() as CelebrantSettings;
-    //       setCelebrantSettings(newSettings);
-    //       localStorage.setItem(
-    //         "celebrantSettings",
-    //         JSON.stringify(newSettings)
-    //       );
-    //     }
-    //   } catch (err) {
-    //     console.error("Fetch error:", err);
-    //     toast.error("Could not sync wishlist with server.");
-    //   }
-    // };
-
-    // fetchFromFirebase();
    const unsub = onAuthStateChanged(auth, async (user) => {
      if (!user) return; // not logged in, only localStorage fallback works
 
