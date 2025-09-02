@@ -146,10 +146,10 @@ function AdminDashboardContent() {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        {/* <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome {user?.email} - Monitor Sarah's birthday wishlist activity</p>
+            <p className="text-gray-600 mt-1">Welcome {user?.displayName} - Monitor  {user?.displayName}'s birthday wishlist activity</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2 bg-transparent" onClick={handleGoToWishlistManagement}>
@@ -173,7 +173,7 @@ function AdminDashboardContent() {
               Logout
             </Button>
           </div>
-        </div>
+        </div> */}
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">

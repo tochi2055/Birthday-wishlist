@@ -375,7 +375,7 @@ export default function BirthdayWishlist() {
                 id="guest-phone"
                 value={guestInfo.phone}
                 onChange={(e) => setGuestInfo({ ...guestInfo, phone: e.target.value })}
-                placeholder="+1 (555) 123-4567"
+                placeholder="+234 801 234 5678"
               />
             </div>
             <div>

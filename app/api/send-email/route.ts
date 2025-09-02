@@ -3,7 +3,12 @@ import { Resend } from "resend"
 
 export async function POST(request: NextRequest) {
   try {
-    const { to, subject, html, from = "noreply@birthdaywishlist.com" } = await request.json()
+    const {
+      to,
+      subject,
+      html,
+      from = "onboarding@resend.dev",
+    } = await request.json();
 
     const corsHeaders = {
       "Access-Control-Allow-Origin": process.env.NODE_ENV === "development" ? "http://localhost:3000" : "*",

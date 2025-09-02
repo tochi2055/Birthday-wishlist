@@ -1,374 +1,388 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import type { WishlistItem } from "./types"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { WishlistItem } from "./types";
+import { toast } from "sonner";
+import { auth, db } from "@/lib/firebase";
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  getDoc,
+  Timestamp,
+} from "firebase/firestore";
+import { onAuthStateChanged, User } from "firebase/auth";
 
 interface CelebrantSettings {
-  name: string
-  age?: number
-  profileImage?: string
-  backgroundImage?: string
+  name: string;
+  age?: number;
+  profileImage?: string;
+  backgroundImage?: string;
 }
 
 interface WishlistContextType {
-  wishlistItems: WishlistItem[]
-  celebrantSettings: CelebrantSettings
-  addItem: (item: Omit<WishlistItem, "id" | "createdAt" | "updatedAt">) => void
-  updateItem: (id: string, updates: Partial<WishlistItem>) => void
-  deleteItem: (id: string) => void
-  updateCelebrantSettings: (settings: Partial<CelebrantSettings>) => void
-  reserveItem: (id: string, quantity?: number) => void
+  wishlistItems: WishlistItem[];
+  celebrantSettings: CelebrantSettings;
+  addItem: (item: Omit<WishlistItem, "id" | "createdAt" | "updatedAt">) => void;
+  updateItem: (id: string, updates: Partial<WishlistItem>) => void;
+  deleteItem: (id: string) => void;
+  updateCelebrantSettings: (settings: Partial<CelebrantSettings>) => void;
+  reserveItem: (id: string, quantity?: number) => void;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(undefined)
+const WishlistContext = createContext<WishlistContextType | undefined>(
+  undefined
+);
 
-const defaultWishlistItems: WishlistItem[] = [
-  // Beauty & Skincare
-  {
-    id: "1",
-    title: "Perfume",
-    description: "Elegant fragrance for special occasions",
-    image: "/elegant-perfume-bottle.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Beauty & Skincare",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2",
-    title: "CeraVe Care Package",
-    description: "Complete skincare routine with moisturizer and cleanser",
-    image: "/cerave-skincare-products.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Beauty & Skincare",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "3",
-    title: "Oriflame Care Package",
-    description: "Premium beauty and skincare collection",
-    image: "/oriflame-beauty-products.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Beauty & Skincare",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "4",
-    title: "Johnson Baby Oil + Lip Gloss",
-    description: "Gentle baby oil with beautiful lip gloss set",
-    image: "/johnson-baby-oil-and-lip-gloss.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Beauty & Skincare",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Electronics & Tech
-  {
-    id: "5",
-    title: "Headset",
-    description: "High-quality audio headset for music and calls",
-    image: "/modern-wireless-headset.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Electronics & Tech",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "6",
-    title: "Digital Camera",
-    description: "Capture beautiful memories with this digital camera",
-    image: "/compact-digital-camera.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Electronics & Tech",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "7",
-    title: "iPhone 12 Cases",
-    description: "Stylish protective cases for iPhone 12",
-    image: "/iphone-12-protective-cases.png",
-    quantity: 3,
-    reserved: 0,
-    category: "Electronics & Tech",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Fashion & Accessories
-  {
-    id: "8",
-    title: "Vintage Bag",
-    description: "Classic vintage-style handbag",
-    image: "/vintage-leather-handbag.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Fashion & Accessories",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "9",
-    title: "Jewelries",
-    description: "Beautiful jewelry pieces for special occasions",
-    image: "/elegant-jewelry-set.png",
-    quantity: 2,
-    reserved: 0,
-    category: "Fashion & Accessories",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "10",
-    title: "Black Baggy Jeans",
-    description: "Comfortable and stylish black baggy jeans",
-    image: "/black-baggy-jeans.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Fashion & Accessories",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "11",
-    title: "Puffer Jacket",
-    description: "Warm and stylish puffer jacket for winter",
-    image: "/stylish-puffer-jacket.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Fashion & Accessories",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Footwear
-  {
-    id: "12",
-    title: "New Balance 530",
-    description: "Classic New Balance 530 sneakers",
-    image: "/new-balance-530-sneakers.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Footwear",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "13",
-    title: "Kitten Heels",
-    description: "Elegant low-heel shoes for any occasion",
-    image: "/elegant-kitten-heel-shoes.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Footwear",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "14",
-    title: "Winter Boots",
-    description: "Warm and comfortable boots for winter weather",
-    image: "/stylish-winter-boots.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Footwear",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "15",
-    title: "Flat Mary Janes",
-    description: "Classic flat Mary Jane shoes",
-    image: "/flat-mary-jane-shoes.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Footwear",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Medical/Professional
-  {
-    id: "16",
-    title: "Lab Coat",
-    description: "Professional white lab coat",
-    image: "/white-medical-lab-coat.png",
-    quantity: 1,
-    reserved: 0,
-    category: "Medical/Professional",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "17",
-    title: "Medical Crocs",
-    description: "Comfortable medical professional shoes",
-    image: "/placeholder.svg?height=300&width=300",
-    quantity: 1,
-    reserved: 0,
-    category: "Medical/Professional",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "18",
-    title: "Stethoscope",
-    description: "Professional medical stethoscope",
-    image: "/placeholder.svg?height=300&width=300",
-    quantity: 1,
-    reserved: 0,
-    category: "Medical/Professional",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Health & Wellness
-  {
-    id: "19",
-    title: "Manicure/Pedicure Appointment",
-    description: "Relaxing nail care treatment at a professional salon",
-    image: "/placeholder.svg?height=300&width=300",
-    quantity: 1,
-    reserved: 0,
-    category: "Health & Wellness",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "20",
-    title: "Spa Appointment",
-    description: "Luxurious spa day for ultimate relaxation",
-    image: "/placeholder.svg?height=300&width=300",
-    quantity: 1,
-    reserved: 0,
-    category: "Health & Wellness",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Travel
-  {
-    id: "21",
-    title: "Train Ticket to Any City in Belarus",
-    description: "Explore Belarus with a train ticket to your chosen destination",
-    image: "/placeholder.svg?height=300&width=300",
-    quantity: 1,
-    reserved: 0,
-    category: "Travel",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // Additional Items
-  {
-    id: "22",
-    title: "Vintage Wine Collection",
-    description: "A selection of fine wines from Bordeaux region",
-    image: "/wine-bottles.png",
-    quantity: 2,
-    reserved: 0,
-    category: "Food & Beverages",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "23",
-    title: "Fresh Flower Bouquet",
-    description: "Beautiful mixed seasonal flowers",
-    image: "/vibrant-flower-bouquet.png",
-    quantity: 3,
-    reserved: 1,
-    category: "Gifts & Flowers",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
+const defaultWishlistItems: WishlistItem[] = [];
 
 const defaultCelebrantSettings: CelebrantSettings = {
   name: "Sarah",
   age: 23,
   profileImage: "/placeholder.svg?key=8yjv9",
   backgroundImage: "/happy-birthday-celebration-background.png",
-}
+};
+
+// 🔄 Helper: get pending sync queue from localStorage
+const getPendingSync = (): any[] => {
+  try {
+    return JSON.parse(localStorage.getItem("pendingSync") || "[]");
+  } catch {
+    return [];
+  }
+};
+
+// 🔄 Helper: save pending sync queue
+const savePendingSync = (queue: any[]) => {
+  localStorage.setItem("pendingSync", JSON.stringify(queue));
+};
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>(defaultWishlistItems)
-  const [celebrantSettings, setCelebrantSettings] = useState<CelebrantSettings>(defaultCelebrantSettings)
+  const [wishlistItems, setWishlistItems] =
+    useState<WishlistItem[]>(defaultWishlistItems);
+  const [celebrantSettings, setCelebrantSettings] = useState<CelebrantSettings>(
+    defaultCelebrantSettings
+  );
+  const [user, setUser] = useState<User | null>(null);
 
-  // Load data from localStorage on mount
+  // 🔄 Retry pending sync when online or on mount
+  const processPendingSync = async () => {
+    const queue = getPendingSync();
+    if (queue.length === 0) return;
+
+    const newQueue: any[] = [];
+
+    for (const task of queue) {
+      try {
+        if (task.type === "add") {
+          await setDoc(doc(db, "wishlistItems", task.item.id), {
+            ...task.item,
+            createdAt: Timestamp.fromDate(new Date(task.item.createdAt)),
+            updatedAt: Timestamp.fromDate(new Date(task.item.updatedAt)),
+          });
+        } else if (task.type === "update") {
+          await updateDoc(doc(db, "wishlistItems", task.id), {
+            ...task.updates,
+            updatedAt: Timestamp.fromDate(new Date(task.updates.updatedAt)),
+          });
+        } else if (task.type === "delete") {
+          await deleteDoc(doc(db, "wishlistItems", task.id));
+        } else if (task.type === "settings") {
+          await setDoc(doc(db, "celebrant", "settings"), task.settings);
+        }
+      } catch (err) {
+        console.error("Retry failed for task:", task, err);
+        newQueue.push(task); // keep in queue if still failing
+      }
+    }
+
+    savePendingSync(newQueue);
+
+    if (newQueue.length === 0) {
+      toast.success("✅ Offline changes synced to server");
+    }
+  };
+
   useEffect(() => {
-    const savedItems = localStorage.getItem("wishlistItems")
-    const savedSettings = localStorage.getItem("celebrantSettings")
+    // Run on mount
+    processPendingSync();
+
+    // Run again when online
+    window.addEventListener("online", processPendingSync);
+    return () => window.removeEventListener("online", processPendingSync);
+  }, []);
+
+  // Load from localStorage, then Firestore
+  useEffect(() => {
+    const savedItems = localStorage.getItem("wishlistItems");
+    const savedSettings = localStorage.getItem("celebrantSettings");
 
     if (savedItems) {
       try {
-        const parsedItems = JSON.parse(savedItems)
-        // Convert date strings back to Date objects
+        const parsedItems = JSON.parse(savedItems);
         const itemsWithDates = parsedItems.map((item: any) => ({
           ...item,
           createdAt: new Date(item.createdAt),
           updatedAt: new Date(item.updatedAt),
-        }))
-        setWishlistItems(itemsWithDates)
-      } catch (error) {
-        console.error("Failed to parse saved wishlist items:", error)
-      }
+        }));
+        setWishlistItems(itemsWithDates);
+      } catch {}
     }
 
     if (savedSettings) {
       try {
-        setCelebrantSettings(JSON.parse(savedSettings))
-      } catch (error) {
-        console.error("Failed to parse saved celebrant settings:", error)
-      }
+        setCelebrantSettings(JSON.parse(savedSettings));
+      } catch {}
     }
-  }, [])
 
-  // Save to localStorage whenever data changes
+    // const fetchFromFirebase = async () => {
+    //   try {
+    //     const itemsSnapshot = await getDocs(collection(db, "wishlistItems"));
+    //     const items: WishlistItem[] = itemsSnapshot.docs.map((doc) => ({
+    //       id: doc.id,
+    //       ...doc.data(),
+    //       createdAt: doc.data().createdAt?.toDate(),
+    //       updatedAt: doc.data().updatedAt?.toDate(),
+    //     })) as WishlistItem[];
+    //     setWishlistItems(items);
+    //     localStorage.setItem("wishlistItems", JSON.stringify(items));
+
+    //     const settingsRef = doc(db, "celebrant", "settings");
+    //     const settingsSnap = await getDoc(settingsRef);
+    //     if (settingsSnap.exists()) {
+    //       const newSettings = settingsSnap.data() as CelebrantSettings;
+    //       setCelebrantSettings(newSettings);
+    //       localStorage.setItem(
+    //         "celebrantSettings",
+    //         JSON.stringify(newSettings)
+    //       );
+    //     }
+    //   } catch (err) {
+    //     console.error("Fetch error:", err);
+    //     toast.error("Could not sync wishlist with server.");
+    //   }
+    // };
+
+    // fetchFromFirebase();
+   const unsub = onAuthStateChanged(auth, async (user) => {
+     if (!user) return; // not logged in, only localStorage fallback works
+
+     try {
+       // ✅ query under user's namespace
+       const itemsSnapshot = await getDocs(
+         collection(db, "users", user.uid, "wishlistItems")
+       );
+       const items: WishlistItem[] = itemsSnapshot.docs.map((doc) => ({
+         id: doc.id,
+         ...doc.data(),
+         createdAt: doc.data().createdAt?.toDate(),
+         updatedAt: doc.data().updatedAt?.toDate(),
+       })) as WishlistItem[];
+       setWishlistItems(items);
+       localStorage.setItem("wishlistItems", JSON.stringify(items));
+
+       const settingsRef = doc(db, "users", user.uid, "celebrant", "settings");
+       const settingsSnap = await getDoc(settingsRef);
+       if (settingsSnap.exists()) {
+         const newSettings = settingsSnap.data() as CelebrantSettings;
+         setCelebrantSettings(newSettings);
+         localStorage.setItem("celebrantSettings", JSON.stringify(newSettings));
+       }
+     } catch (err) {
+       console.error("Fetch error:", err);
+       toast.error("Could not sync wishlist with server.");
+     }
+   });
+
+   return () => unsub();
+  
+  }, []);
+
+  // Keep localStorage updated
   useEffect(() => {
-    localStorage.setItem("wishlistItems", JSON.stringify(wishlistItems))
-  }, [wishlistItems])
+    localStorage.setItem("wishlistItems", JSON.stringify(wishlistItems));
+  }, [wishlistItems]);
 
   useEffect(() => {
-    localStorage.setItem("celebrantSettings", JSON.stringify(celebrantSettings))
-  }, [celebrantSettings])
+    localStorage.setItem(
+      "celebrantSettings",
+      JSON.stringify(celebrantSettings)
+    );
+  }, [celebrantSettings]);
 
-  const addItem = (itemData: Omit<WishlistItem, "id" | "createdAt" | "updatedAt">) => {
+  // 👤 Listen for login/logout
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        loadUserData(firebaseUser.uid);
+      } else {
+        setWishlistItems([]);
+        setCelebrantSettings(defaultCelebrantSettings);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // 🔄 Load user-specific data
+  const loadUserData = async (uid: string) => {
+    const itemsSnapshot = await getDocs(
+      collection(db, "users", uid, "wishlistItems")
+    );
+    const items: WishlistItem[] = itemsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+      updatedAt: doc.data().updatedAt?.toDate(),
+    })) as WishlistItem[];
+    setWishlistItems(items);
+
+    const settingsRef = doc(db, "users", uid, "celebrant", "settings");
+    const settingsSnap = await getDoc(settingsRef);
+    if (settingsSnap.exists()) {
+      setCelebrantSettings(settingsSnap.data() as CelebrantSettings);
+    }
+  };
+
+  // ✍️ When adding/updating, always include `uid`
+  const addItem = async (
+    itemData: Omit<WishlistItem, "id" | "createdAt" | "updatedAt">
+  ) => {
+    if (!user) return toast.error("You must be logged in to add items");
+
+    const id = Date.now().toString();
     const newItem: WishlistItem = {
       ...itemData,
-      id: Date.now().toString(),
+      id,
       createdAt: new Date(),
       updatedAt: new Date(),
+    };
+
+    try {
+      await setDoc(doc(db, "users", user.uid, "wishlistItems", id), {
+        ...newItem,
+        createdAt: Timestamp.fromDate(newItem.createdAt),
+        updatedAt: Timestamp.fromDate(newItem.updatedAt),
+      });
+      toast.success("Item added");
+    } catch (err) {
+      console.error("Add item failed, queueing:", err);
+      const queue = getPendingSync();
+      queue.push({ type: "add", item: newItem });
+      savePendingSync(queue);
+      toast.error("Failed to add item, changes will sync when online.");
     }
-    setWishlistItems((prev) => [...prev, newItem])
-  }
 
-  const updateItem = (id: string, updates: Partial<WishlistItem>) => {
-    setWishlistItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates, updatedAt: new Date() } : item)),
-    )
-  }
+    setWishlistItems((prev) => [...prev, newItem]);
+  };
 
-  const deleteItem = (id: string) => {
-    setWishlistItems((prev) => prev.filter((item) => item.id !== id))
-  }
+  const updateItem = async (id: string, updates: Partial<WishlistItem>) => {
+    if (!user) return toast.error("You must be logged in");
 
-  const updateCelebrantSettings = (settings: Partial<CelebrantSettings>) => {
-    setCelebrantSettings((prev) => ({ ...prev, ...settings }))
-  }
+    const updatedAt = new Date();
 
-  const reserveItem = (id: string, quantity = 1) => {
+    try {
+      await updateDoc(doc(db, "users", user.uid, "wishlistItems", id), {
+        ...updates,
+        updatedAt: Timestamp.fromDate(updatedAt),
+      });
+      toast.success("Item updated");
+    } catch (err) {
+      console.error("Update item failed, queueing:", err);
+      const queue = getPendingSync();
+      queue.push({ type: "update", id, updates: { ...updates, updatedAt } });
+      savePendingSync(queue);
+      toast.error("Failed to update item, changes will sync when online.");
+    }
+
     setWishlistItems((prev) =>
       prev.map((item) =>
-        item.id === id
-          ? { ...item, reserved: Math.min(item.reserved + quantity, item.quantity), updatedAt: new Date() }
-          : item,
-      ),
-    )
-  }
+        item.id === id ? { ...item, ...updates, updatedAt } : item
+      )
+    );
+  };
+
+  const deleteItem = async (id: string) => {
+    if (!user) return toast.error("You must be logged in");
+
+    try {
+      await deleteDoc(doc(db, "users", user.uid, "wishlistItems", id));
+      toast.success("Item deleted");
+    } catch (err) {
+      console.error("Delete item failed, queueing:", err);
+      const queue = getPendingSync();
+      queue.push({ type: "delete", id });
+      savePendingSync(queue);
+      toast.error("Failed to delete item, changes will sync when online.");
+    }
+
+    setWishlistItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateCelebrantSettings = async (
+    settings: Partial<CelebrantSettings>
+  ) => {
+    if (!user) return toast.error("You must be logged in");
+
+    const newSettings = { ...celebrantSettings, ...settings };
+
+    try {
+      await setDoc(
+        doc(db, "users", user.uid, "celebrant", "settings"),
+        newSettings
+      );
+      toast.success("Settings updated");
+    } catch (err) {
+      console.error("Update settings failed, queueing:", err);
+      const queue = getPendingSync();
+      queue.push({ type: "settings", settings: newSettings });
+      savePendingSync(queue);
+      toast.error("Failed to update settings, changes will sync when online.");
+    }
+
+    setCelebrantSettings(newSettings);
+  };
+
+  const reserveItem = async (id: string, quantity = 1) => {
+    if (!user) return toast.error("You must be logged in");
+
+    const item = wishlistItems.find((i) => i.id === id);
+    if (!item) return;
+
+    const newReserved = Math.min(
+      (item.reserved || 0) + quantity,
+      item.quantity
+    );
+    const updatedAt = new Date();
+
+    try {
+      await updateDoc(doc(db, "users", user.uid, "wishlistItems", id), {
+        reserved: newReserved,
+        updatedAt: Timestamp.fromDate(updatedAt),
+      });
+      toast.success("Item reserved");
+    } catch (err) {
+      console.error("Reserve item failed, queueing:", err);
+      const queue = getPendingSync();
+      queue.push({
+        type: "update",
+        id,
+        updates: { reserved: newReserved, updatedAt },
+      });
+      savePendingSync(queue);
+      toast.error("Failed to reserve item, changes will sync when online.");
+    }
+
+    setWishlistItems((prev) =>
+      prev.map((i) =>
+        i.id === id ? { ...i, reserved: newReserved, updatedAt } : i
+      )
+    );
+  };
 
   return (
     <WishlistContext.Provider
@@ -384,13 +398,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     >
       {children}
     </WishlistContext.Provider>
-  )
+  );
 }
 
 export function useWishlist() {
-  const context = useContext(WishlistContext)
+  const context = useContext(WishlistContext);
   if (context === undefined) {
-    throw new Error("useWishlist must be used within a WishlistProvider")
+    throw new Error("useWishlist must be used within a WishlistProvider");
   }
-  return context
+  return context;
 }

@@ -141,6 +141,7 @@ function AdminDashboardContent() {
       await logout()
       router.push("/admin/login")
     } catch (error) {
+      toast.error("Logout failed. Please try again.")
       console.error("Logout failed:", error)
     }
   }

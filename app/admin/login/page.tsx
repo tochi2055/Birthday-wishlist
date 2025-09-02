@@ -10,6 +10,7 @@ import { Gift, Heart, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { toast } from "sonner"
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("")
@@ -34,6 +35,9 @@ export default function AdminLogin() {
       await login(email, password)
       router.push("/admin")
     } catch (error: any) {
+      toast.error(
+        error.message || "Login failed. Please check your credentials."
+      );
       setError(error.message || "Login failed. Please check your credentials.")
     } finally {
       setIsLoading(false)
