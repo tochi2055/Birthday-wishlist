@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Loader2, Download, Sparkles, RefreshCw } from "lucide-react"
+import { toast } from "sonner";
 
 interface AILetterGeneratorProps {
   guestName?: string
@@ -55,11 +56,11 @@ export function AILetterGenerator({ guestName = "", selectedItems = [] }: AILett
       if (data.success) {
         setGeneratedLetter(data.letter)
       } else {
-        alert("Sorry, there was an error generating your letter. Please try again.")
+        toast.error("Sorry, there was an error generating your letter. Please try again.")
       }
     } catch (error) {
       console.error("Letter generation error:", error)
-      alert("Sorry, there was an error generating your letter. Please try again.")
+      toast.error("Sorry, there was an error generating your letter. Please try again.")
     } finally {
       setIsGenerating(false)
     }

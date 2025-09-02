@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { useWishlist } from "@/lib/wishlist-context"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MoneyDonationModal } from "@/components/money-donation-modal"
+import { toast } from "sonner";
 
 export default function BirthdayWishlist() {
   const router = useRouter()
@@ -81,13 +82,13 @@ export default function BirthdayWishlist() {
         setGuestInfo({ name: "", email: "", phone: "", message: "" })
         setShowReservationForm(false)
 
-        alert("🎉 Thank you! Your gifts have been reserved and confirmation emails have been sent.")
+        toast.success("🎉 Thank you! Your gifts have been reserved and confirmation emails have been sent.")
       } else {
-        alert("❌ Sorry, there was an error processing your reservation. Please try again.")
+        toast.error("Sorry, there was an error processing your reservation. Please try again.")
       }
     } catch (error) {
       console.error("Reservation error:", error)
-      alert("❌ Sorry, there was an error processing your reservation. Please try again.")
+      toast.error("Sorry, there was an error processing your reservation. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -116,11 +117,11 @@ export default function BirthdayWishlist() {
         throw new Error("Failed to process donation")
       }
 
-      alert("✅ Thank you! Bank transfer instructions have been sent to your email.")
+      toast.success("✅ Thank you! Bank transfer instructions have been sent to your email.")
       setShowMoneyDonationForm(false)
     } catch (error) {
       console.error("Money donation error:", error)
-      alert("❌ Sorry, there was an error processing your donation request. Please try again.")
+      toast.error("Sorry, there was an error processing your donation request. Please try again.")
     } finally {
       setIsSubmitting(false)
     }

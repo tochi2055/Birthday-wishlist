@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { WishlistItemForm } from "@/components/wishlist-item-form"
 import { uploadImage } from "@/lib/storage"
+import { toast } from "sonner";
 
 function AdminDashboardContent() {
   const { logout, user } = useAuth()
@@ -108,7 +109,7 @@ function AdminDashboardContent() {
           }
         } catch (error) {
           console.error("Upload failed:", error)
-          alert("Failed to upload image. Please try again.")
+          toast.error("Failed to upload image. Please try again.")
         } finally {
           if (type === "profile") {
             setIsUploadingProfile(false)

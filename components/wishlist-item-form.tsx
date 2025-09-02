@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Upload, X, Loader2 } from "lucide-react"
 import type { WishlistItem } from "@/lib/types"
 import { uploadImage, deleteImage } from "@/lib/storage"
+import { toast } from "sonner";
 
 interface WishlistItemFormProps {
   item?: WishlistItem
@@ -40,7 +41,7 @@ export function WishlistItemForm({ item, onSave, onCancel }: WishlistItemFormPro
         setUploadedImagePath(result.path)
       } catch (error) {
         console.error("Upload failed:", error)
-        alert("Failed to upload image. Please try again.")
+        toast.error("Failed to upload image. Please try again.")
       } finally {
         setIsUploading(false)
       }

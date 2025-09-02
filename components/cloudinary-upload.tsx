@@ -6,6 +6,7 @@ import { useState, useCallback } from "react"
 import { X, ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { toast } from "sonner";
 
 interface CloudinaryUploadProps {
   onUpload: (url: string) => void
@@ -43,7 +44,7 @@ export function CloudinaryUpload({ onUpload, currentImage, className = "" }: Clo
 
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Please select an image file")
+      toast.error("Please select an image file")
       return
     }
 
@@ -54,7 +55,7 @@ export function CloudinaryUpload({ onUpload, currentImage, className = "" }: Clo
       onUpload(url)
     } catch (error) {
       console.error("Upload error:", error)
-      alert("Failed to upload image. Please try again.")
+      toast.error("Failed to upload image. Please try again.")
     } finally {
       setUploading(false)
     }
