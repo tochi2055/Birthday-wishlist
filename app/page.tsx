@@ -879,7 +879,9 @@ function AdminDashboardContent() {
   };
 
   const handleViewPublicPage = () => {
-    window.open("/", "_blank");
+    const shareUrl = `${window.location.origin}/public/${user?.uid}`;
+
+    window.open(shareUrl, "_blank");
   };
 
   const handleShareWishlist = () => {
@@ -904,7 +906,7 @@ function AdminDashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        {/* <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="font-bold text-gray-900 dark:text-white font-caveat text-4xl">
               Wishlist Management
@@ -914,7 +916,53 @@ function AdminDashboardContent() {
               wishlist
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              className="gap-2 bg-transparent sm:"
+              onClick={handleShareWishlist}
+            >
+              <Share className="w-4 h-4" />
+              Share Wishlist
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 bg-transparent"
+              onClick={handleViewPublicPage}
+            >
+              <Eye className="w-4 h-4" />
+              View Public Page
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 bg-transparent"
+              onClick={() => setIsSettingsDialogOpen(true)}
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </Button>
+            <Button
+              variant="outline"
+              className="gap-2 bg-transparent"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </Button>
+          </div>
+        </div> */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="font-bold text-gray-900 dark:text-white font-caveat text-2xl sm:text-3xl md:text-4xl">
+              Wishlist Management
+            </h1>
+            <p className="text-gray-600 mt-1 dark:text-gray-300 font-caveat text-base sm:text-lg">
+              Welcome {user?.email} - Manage {celebrantSettings.name}'s birthday
+              wishlist
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
             <ThemeToggle />
             <Button
               variant="outline"

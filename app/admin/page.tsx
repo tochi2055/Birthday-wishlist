@@ -169,7 +169,7 @@ function AdminDashboardContent() {
             <ThemeToggle />
             <Button variant="outline" className="gap-2 bg-transparent" onClick={handleViewPublicPage}>
               <Eye className="w-4 h-4" />
-              View Public Page
+              View Public Pages
             </Button>
             <Button variant="outline" className="gap-2 bg-transparent" onClick={() => setIsSettingsDialogOpen(true)}>
               <Settings className="w-4 h-4" />
