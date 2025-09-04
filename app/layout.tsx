@@ -18,7 +18,9 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   title: "Birthday Wishlist",
   description: "Make birthdays extra special with personalized wishlists",
-  generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
