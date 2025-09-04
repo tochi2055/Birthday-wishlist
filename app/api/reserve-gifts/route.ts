@@ -106,14 +106,21 @@
 //   })
 // }
 
-
 import { type NextRequest, NextResponse } from "next/server";
 import {
   sendEmail,
   generateReservationConfirmationEmail,
   generateAdminNotificationEmail,
 } from "@/lib/email";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  updateDoc,
+  runTransaction,
+  increment,
+  doc,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export async function POST(request: NextRequest) {
@@ -135,9 +142,75 @@ export async function POST(request: NextRequest) {
       throw new Error("Celebrant ID is required");
     }
 
-    const docRef = await addDoc(
-      collection(db, "users", celebrantId, "reservations"),
-      {
+    // const docRef = await addDoc(
+    //   collection(db, "users", celebrantId, "reservations"),
+    //   {
+    //     guestName,
+    //     guestEmail,
+    //     guestPhone,
+    //     message,
+    //     selectedItems,
+    //     includeWine,
+    //     includeFlowers,
+    //     celebrantId,
+    //     createdAt: Timestamp.now(),
+    //   }
+    // );
+
+    // console.log("✅ Reservation saved to Firebase with ID:", docRef.id);
+    // // Update reserved & quantity for each item
+    // for (const item of selectedItems) {
+    //   const itemRef = doc(db, "users", celebrantId, "items", item.id);
+
+    //   await updateDoc(itemRef, {
+    //     reserved: increment(1),
+    //     quantity: increment(-1),
+    //   });
+    // }
+
+    // Send confirmation email to guest
+
+    const reservationsCol = collection(
+      db,
+      "users",
+      celebrantId,
+      "reservations"
+    );
+
+    // Generate reservation ref & ID upfront
+    const newReservationRef = doc(reservationsCol);
+    const reservationId = newReservationRef.id;
+
+    await runTransaction(db, async (transaction) => {
+      // Step 1: Read all items first
+      const itemSnapshots: { ref: any; snap: any; item: any }[] = [];
+
+      for (const item of selectedItems) {
+        const itemRef = doc(
+          db,
+          "users",
+          celebrantId,
+          "wishlistItems",
+          String(item.id)
+        );
+        const itemSnap = await transaction.get(itemRef);
+        console.log("Checking itemRef path:", itemRef.path);
+
+        if (!itemSnap.exists()) {
+          throw new Error(`Item ${item.id} does not exist`);
+        }
+
+        const data = itemSnap.data();
+        if (data.quantity <= 0) {
+          throw new Error(`Item ${item.title} is out of stock`);
+        }
+
+        // Save for later write
+        itemSnapshots.push({ ref: itemRef, snap: itemSnap, item });
+      }
+
+      // Step 2: Now perform writes
+      transaction.set(newReservationRef, {
         guestName,
         guestEmail,
         guestPhone,
@@ -147,12 +220,16 @@ export async function POST(request: NextRequest) {
         includeFlowers,
         celebrantId,
         createdAt: Timestamp.now(),
+      });
+
+      for (const { ref } of itemSnapshots) {
+        transaction.update(ref, {
+          reserved: increment(1),
+          quantity: increment(-1),
+        });
       }
-    );
+    });
 
-    console.log("✅ Reservation saved to Firebase with ID:", docRef.id);
-
-    // Send confirmation email to guest
     const guestEmailHtml = generateReservationConfirmationEmail({
       guestName,
       guestEmail,
@@ -196,7 +273,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: "Reservation confirmed and emails sent!",
-        reservationId: docRef.id,
+        reservationId: reservationId,
       },
       { headers: corsHeaders }
     );
