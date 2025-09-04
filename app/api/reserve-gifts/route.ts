@@ -27,18 +27,14 @@ export async function POST(request: NextRequest) {
       selectedItems,
       includeWine,
       includeFlowers,
-      celebrantId,
+      userId,
     } = reservationData;
 
-    if (!celebrantId) {
-      throw new Error("Celebrant ID is required");
+    if (!userId) {
+      throw new Error("User ID is required");
     }
-    const reservationsCol = collection(
-      db,
-      "users",
-      celebrantId,
-      "reservations"
-    );
+    console.log("User ID:", userId);
+    const reservationsCol = collection(db, "users", userId, "reservations");
 
     // Generate reservation ref & ID upfront
     const newReservationRef = doc(reservationsCol);
@@ -52,7 +48,7 @@ export async function POST(request: NextRequest) {
         const itemRef = doc(
           db,
           "users",
-          celebrantId,
+          userId,
           "wishlistItems",
           String(item.id)
         );
@@ -81,7 +77,7 @@ export async function POST(request: NextRequest) {
         selectedItems,
         includeWine,
         includeFlowers,
-        celebrantId,
+        userId,
         createdAt: Timestamp.now(),
       });
 

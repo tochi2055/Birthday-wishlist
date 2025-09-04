@@ -147,7 +147,8 @@ export default function PublicWishlist() {
           selectedItems: selectedItemsData,
           includeWine,
           includeFlowers,
-          celebrantId: userId,
+          // this is actually the userId in the url
+          userId,
         }),
       });
 
